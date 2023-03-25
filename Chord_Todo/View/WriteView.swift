@@ -8,20 +8,77 @@
 import SwiftUI
 
 struct WriteView: View {
+    enum Mode {
+        case create, update
+        
+        var textValue: String {
+            switch self {
+            case .create:
+                return "Create"
+            case .update:
+                return "Update"
+            }
+        }
+    }
+    
     @Binding var isWriteSuccess: Bool
     
-    @State private var todoTitle: String = ""
-    @State private var chordText: String = "C"
-    @State private var comment: String = ""
+    var mode: Mode = .create
+    
+    @State var todoTitle: String = ""
+    @State var chordText: String = "C"
+    @State var comment: String = ""
+    /// Update 전용: UUID
+    @State var id: UUID? = nil
     
     @State private var showTitleAlert = false
     @State private var showChordEmpty = false
     
     @Environment(\.dismiss) var dismiss
     
+    private func addTodo() {
+        let todo = ChordTodo(title: todoTitle, chord: chordText, comment: comment)
+        
+        // Save to UserDefaults
+        do {
+            var list = (try? UserDefaults.standard.getObject(forKey: .cfgTodoList, castTo: [ChordTodo].self)) ?? [ChordTodo]()
+            list.append(todo)
+            // print(list)
+            try UserDefaults.standard.setObject(list, forKey: .cfgTodoList)
+            isWriteSuccess = true
+            dismiss()
+        } catch {
+            print("Create Error:", error)
+        }
+    }
+    
+    private func updateTodo() {
+        guard let id = id else {
+            return
+        }
+        
+        do {
+            var list = (try? UserDefaults.standard.getObject(forKey: .cfgTodoList, castTo: [ChordTodo].self)) ?? [ChordTodo]()
+            if let replaceIndex = list.firstIndex(where: { $0.id == id }) {
+                list[replaceIndex].title = todoTitle
+                list[replaceIndex].chord = chordText
+                list[replaceIndex].comment = comment
+                list[replaceIndex].modifiedDate = Date()
+                
+                try UserDefaults.standard.setObject(list, forKey: .cfgTodoList)
+                isWriteSuccess = true
+                dismiss()
+            }
+            
+            // print(list)
+        } catch {
+            print("Update Error:", error)
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Write").font(.largeTitle)
+            Text("Write: \(mode.textValue)").font(.largeTitle)
             
             Divider()
             
@@ -64,18 +121,13 @@ struct WriteView: View {
                         return
                     }
                     
-                    let todo = ChordTodo(title: todoTitle, chord: chordText, comment: comment)
+                    print(mode)
                     
-                    // Save to UserDefaults
-                    do {
-                        var list = (try? UserDefaults.standard.getObject(forKey: .cfgTodoList, castTo: [ChordTodo].self)) ?? [ChordTodo]()
-                        list.append(todo)
-                        // print(list)
-                        try UserDefaults.standard.setObject(list, forKey: .cfgTodoList)
-                        isWriteSuccess = true
-                        dismiss()
-                    } catch {
-                        print("Write Error:", error)
+                    switch mode {
+                    case .create:
+                        addTodo()
+                    case .update:
+                        updateTodo()
                     }
                 }.alert(Text("이름을 입력해야 합니다."), isPresented: $showTitleAlert) {
                     Button("OK", role: .cancel) {}

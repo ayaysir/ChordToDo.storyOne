@@ -10,8 +10,10 @@ import SwiftUI
 struct ListView: View {
     @Binding var isUpdated: Bool
     @ObservedObject var viewModel = ListViewModel()
-    @State var showBody = false
+    // @State var showBody = false
+    // @State var showUpdateForm = false
     @State var currentTodo: ChordTodo?
+    @State var toUpdateTodo: ChordTodo?
     
     var body: some View {
         // Text(isUpdated ? "Updated" : "Failed")
@@ -40,12 +42,15 @@ struct ListView: View {
                             list.removeAll { $0.id == todo.id }
                             print("deleted list", todo.id, list)
                             try? UserDefaults.standard.setObject(list, forKey: .cfgTodoList)
+                            
+                            // 이게 된다고?
                             isUpdated = true
                             isUpdated = false
                         }
                     }.tint(.red)
                     Button("Update") {
-                        
+                        toUpdateTodo = todo
+                        // print("press update:", toUpdateTodo, todo)
                     }.tint(.blue)
                 }
             }
@@ -60,7 +65,9 @@ struct ListView: View {
                 isUpdated = false
             }
         }) { todo in
-            BodyView(isRemoved: $isUpdated, chordTodo: todo)
+            BodyView(isTodoStateChanged: $isUpdated, chordTodo: todo)
+        }.sheet(item: $toUpdateTodo) {
+            WriteView(isWriteSuccess: $isUpdated, mode: .update, todoTitle: $0.title, chordText: $0.chord, comment: $0.comment, id: $0.id)
         }
     }
 }
