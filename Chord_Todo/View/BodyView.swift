@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct BodyView: View {
+    @Binding var isRemoved: Bool
+    
     @State var chordTodo: ChordTodo
+    @State var showRemoveAlert = false
     
     @Environment(\.dismiss) var dismiss
     
@@ -22,25 +25,40 @@ struct BodyView: View {
             HStack {
                 Text(chordTodo.chord)
                     .font(.title2)
-                Button {
-                    //
-                } label: {
-                    Image(systemName: "play.fill")
-                }
-
             }
+            
+            // 웹뷰 버그: https://developer.apple.com/forums/thread/714467?answerId=734799022#734799022
+            WebView(url: URL(string: "https://www.scales-chords.com/chord/piano/\(chordTodo.chord)"))
+            
             Divider()
             Text(chordTodo.comment.isEmpty ? "No Comment..." : chordTodo.comment)
             Divider()
-            Button("닫기") {
-                dismiss()
-            }
+            HStack {Button {
+                    if var list = try? UserDefaults.standard.getObject(forKey: .cfgTodoList, castTo: [ChordTodo].self) {
+                        list.removeAll { $0.id == self.chordTodo.id }
+                        print("deleted list", self.chordTodo.id, list)
+                        try? UserDefaults.standard.setObject(list, forKey: .cfgTodoList)
+                        isRemoved = true
+                        dismiss()
+                    }
+                } label: {
+                    Text("삭제")
+                        .foregroundColor(.red)
+                }
+                
+                Spacer()
+                
+                Button("닫기") {
+                    dismiss()
+                }
+            }.padding(sides: [.left, .right], value: 20)
         }
     }
 }
 
 struct BodyView_Previews: PreviewProvider {
     static var previews: some View {
-        BodyView(chordTodo: ChordTodo(title: "불안하다", chord: "Cdim", comment: "comment...."))
+        StatefulPreviewWrapper(false) {
+            BodyView(isRemoved: $0, chordTodo: ChordTodo(title: "불안하다", chord: "Cdim7", comment: "comment...."))}
     }
 }

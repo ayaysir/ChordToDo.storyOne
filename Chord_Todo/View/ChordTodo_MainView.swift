@@ -7,29 +7,34 @@
 
 import SwiftUI
 
+extension String {
+    static let cfgTodoList = "TODO_LIST"
+}
+
 struct ChordTodo_MainView: View {
     @State var showWriterView = false
-    @State var isWriteSuccess = false
+    @State var isListUpdated = false
     
     var body: some View {
         VStack(spacing: 20) {
             HeaderView {
                 showWriterView = true
             }.sheet(isPresented: $showWriterView, onDismiss: {
-                if isWriteSuccess {
-                    print("Write Success")
-                    isWriteSuccess = false
+                print("list up: this")
+                if isListUpdated {
+                    print("List Updated")
+                    isListUpdated = false
                 } else {
-                    print("Write failed")
+                    print("List not updated")
                 }
             }, content: {
-                WriteView(isWriteSuccess: $isWriteSuccess)
+                WriteView(isWriteSuccess: $isListUpdated)
             })
             Divider()
             
             // TODO: - 이거 없으면 뷰 업데이트가 안됨 -> 뷰 새로고침 방법?
-            Text(isWriteSuccess ? "" : "")
-            ListView(isUpdated: $isWriteSuccess)
+            Text(isListUpdated ? "Updated \(Date())" : "")
+            ListView(isUpdated: $isListUpdated)
         }
         .padding(sides: [.left, .right], value: 20)
     }

@@ -7,23 +7,6 @@
 
 import SwiftUI
 
-class ListViewModel: ObservableObject {
-    @Published var list: [ChordTodo] = [ChordTodo(title: "First", chord: "F", comment: "")]
-    
-    init() {
-        load()
-    }
-    
-    func load() {
-        print("load called")
-        if let list = try? UserDefaults.standard.getObject(forKey: "TODO_LIST", castTo: [ChordTodo].self) {
-            self.list = list
-        } else {
-            print("fetch failed")
-        }
-    }
-}
-
 struct ListView: View {
     @Binding var isUpdated: Bool
     @ObservedObject var viewModel = ListViewModel()
@@ -50,6 +33,20 @@ struct ListView: View {
                      3. List.sheet(item: $currentItem) 사용
                      */
                     currentTodo = todo
+                }.swipeActions {
+                    // 순서: 오른쪽 -> 왼쪽
+                    Button("Delete") {
+                        if var list = try? UserDefaults.standard.getObject(forKey: .cfgTodoList, castTo: [ChordTodo].self) {
+                            list.removeAll { $0.id == todo.id }
+                            print("deleted list", todo.id, list)
+                            try? UserDefaults.standard.setObject(list, forKey: .cfgTodoList)
+                            isUpdated = true
+                            isUpdated = false
+                        }
+                    }.tint(.red)
+                    Button("Update") {
+                        
+                    }.tint(.blue)
                 }
             }
         }.task {
@@ -57,8 +54,30 @@ struct ListView: View {
             viewModel.load()
         }.onAppear {
             print("List View: OnApppear")
-        }.sheet(item: $currentTodo) { todo in
-            BodyView(chordTodo: todo)
+        }.sheet(item: $currentTodo, onDismiss: {
+            if isUpdated {
+                print("Inner List Updated")
+                isUpdated = false
+            }
+        }) { todo in
+            BodyView(isRemoved: $isUpdated, chordTodo: todo)
+        }
+    }
+}
+
+class ListViewModel: ObservableObject {
+    @Published var list: [ChordTodo] = [ChordTodo(title: "First", chord: "F", comment: "")]
+    
+    init() {
+        load()
+    }
+    
+    func load() {
+        print("load called")
+        if let list = try? UserDefaults.standard.getObject(forKey: .cfgTodoList, castTo: [ChordTodo].self) {
+            self.list = list
+        } else {
+            print("fetch failed")
         }
     }
 }
