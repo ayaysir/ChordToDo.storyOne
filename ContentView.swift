@@ -4,7 +4,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             // ParksQuoteView()
-            MainView()
+            ChordTodo_MainView()
         }
     }
 }

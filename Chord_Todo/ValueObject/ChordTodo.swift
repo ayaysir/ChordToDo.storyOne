@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChordTodo: Codable, Hashable {
+struct ChordTodo: Codable, Hashable, Identifiable {
     var id: UUID = UUID()
     var createdDate: Date = Date()
     var modifiedDate: Date?
