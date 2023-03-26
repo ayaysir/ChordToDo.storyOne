@@ -54,7 +54,8 @@ struct ListView: View {
                     }.tint(.blue)
                 }
             }
-        }.task {
+        }.listStyle(PlainListStyle())
+        .task {
             print("List View: task")
             viewModel.load()
         }.onAppear {

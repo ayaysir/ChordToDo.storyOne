@@ -17,6 +17,7 @@ struct ChordTodo_MainView: View {
     
     var body: some View {
         VStack(spacing: 20) {
+            Spacer()
             HeaderView {
                 showWriterView = true
             }.sheet(isPresented: $showWriterView, onDismiss: {
@@ -34,6 +35,8 @@ struct ChordTodo_MainView: View {
             
             // TODO: - 이거 없으면 뷰 업데이트가 안됨 -> 뷰 새로고침 방법?
             Text(isListUpdated ? "Updated \(Date())" : "")
+                .font(.system(size: 2))
+                .frame(height: 0)
             ListView(isUpdated: $isListUpdated)
         }
         .padding(sides: [.left, .right], value: 20)
