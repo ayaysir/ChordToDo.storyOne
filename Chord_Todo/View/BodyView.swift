@@ -14,6 +14,8 @@ struct BodyView: View {
     @State var showRemoveAlert = false
     @State var showUpdateForm = false
     
+    @StateObject var webViewData = WebViewData()
+    
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -26,10 +28,20 @@ struct BodyView: View {
             HStack {
                 Text(chordTodo.chord)
                     .font(.title2)
+                Button {
+                    webViewData.functionCaller.send(
+                        """
+                        // document.querySelector("h1").textContent = "JS Evaluated"
+                        document.querySelector("button[id^='playbut']").click()
+                        """
+                    )
+                } label: {
+                    Image(systemName: "play.fill")
+                }
             }
             
             // 웹뷰 버그: https://developer.apple.com/forums/thread/714467?answerId=734799022#734799022
-            WebView(url: URL(string: "https://www.scales-chords.com/chord/piano/\(chordTodo.chord.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? chordTodo.chord)"))
+            WebView(url: URL(string: "https://www.scales-chords.com/chord/piano/\(chordTodo.chord.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? chordTodo.chord)"), data: webViewData)
             
             Divider()
             Text(chordTodo.comment.isEmpty ? "No Comment..." : chordTodo.comment)
@@ -77,6 +89,7 @@ struct BodyView: View {
 struct BodyView_Previews: PreviewProvider {
     static var previews: some View {
         StatefulPreviewWrapper(false) {
-            BodyView(isTodoStateChanged: $0, chordTodo: ChordTodo(title: "불안하다", chord: "Cdim7", comment: "comment...."))}
+            BodyView(isTodoStateChanged: $0, chordTodo: ChordTodo(title: "불안하다", chord: "Cdim7", comment: "comment...."))
+            }
     }
 }

@@ -73,6 +73,17 @@ struct ListView: View {
 }
 
 class ListViewModel: ObservableObject {
+    /*
+     @Published는 SwiftUI에서 가장 유용한 속성 래퍼 중 하나이며
+        변경이 발생할 때 자동으로 알리는 관찰 가능한
+        오브젝트(observable object)를 만들 수 있습니다.
+        SwiftUI는 이러한 변경 사항을 자동으로 모니터링하고
+        데이터에 의존하는 모든 View의 body 속성을 다시 호출합니다.
+     
+     @Published 속성 래퍼는 항목에 willSet 속성 관찰자(실제 값이
+        set되기 전에 새로운 값을 먼저 받는다)를 추가하여 모든 변경 사항이
+        관찰자(observer)에게 자동으로 전송되도록 합니다.
+     */
     @Published var list: [ChordTodo] = [ChordTodo(title: "First", chord: "F", comment: "")]
     
     init() {
